@@ -1,8 +1,9 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { PrismaService } from 'nestjs-prisma';
 import * as bcrypt from 'bcrypt';
+import { Prisma } from '@prisma/client';
 
 @Injectable()
 export class UserService {
@@ -12,7 +13,20 @@ export class UserService {
       createUserDto.password,
       +process.env.HASHROUND,
     );
-    return this.prisma.user.create({ data: createUserDto });
+    try {
+      console.log(createUserDto);
+      return await this.prisma.user.create({ data: createUserDto });
+    } catch (e) {
+      if (
+        e instanceof Prisma.PrismaClientKnownRequestError &&
+        e.code === 'P2002'
+      ) {
+        throw new BadRequestException(
+          'This email violates the unique constraint!',
+        );
+      }
+      throw e;
+    }
   }
 
   async findAll() {
