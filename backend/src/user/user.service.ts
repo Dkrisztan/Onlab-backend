@@ -14,7 +14,6 @@ export class UserService {
       +process.env.HASHROUND,
     );
     try {
-      console.log(createUserDto);
       return await this.prisma.user.create({ data: createUserDto });
     } catch (e) {
       if (
