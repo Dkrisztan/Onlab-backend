@@ -1,15 +1,59 @@
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
+  previewFeatures = ["fullTextIndex"]
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "mongodb"
   url      = env("DATABASE_URL")
 }
 
 model User {
-  id       String @id @default(uuid())
+  id       String @id @default(auto()) @map("_id") @db.ObjectId
   name     String
   email    String @unique
   password String
+  plugs    Plug[]
+}
+
+type Year {
+  year   Int
+  months Month[]
+}
+
+type Month {
+  month Int
+  days  Day[]
+}
+
+type Day {
+  day   Int
+  hours Hour[]
+}
+
+type Hour {
+  hour    Int
+  minutes Minute[]
+}
+
+type Minute {
+  minute   Int
+  measures Measure[]
+}
+
+type Measure {
+  second  Int
+  voltage Int
+  current Int
+}
+
+model Plug {
+  id       String  @id @default(auto()) @map("_id") @db.ObjectId
+  deviceId String
+  name     String
+  iconName String
+  color    String
+  User     User?   @relation(fields: [userId], references: [id])
+  userId   String? @db.ObjectId
+  years    Year[]
 }
