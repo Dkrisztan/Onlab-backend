@@ -43,7 +43,6 @@ type Minute {
 
 type Measure {
   second  Int
-  voltage Int
   current Int
 }
 
