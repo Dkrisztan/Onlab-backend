@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { SendDataDto } from './dto/sendDataDto';
+import * as process from 'process';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const MongoClient = require('mongodb').MongoClient;
@@ -8,13 +9,10 @@ const MongoClient = require('mongodb').MongoClient;
 export class DataService {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   async create(sendDataDto: SendDataDto) {
-    const client = new MongoClient(
-      'mongodb+srv://admin:admin@onlab.xyu0ogl.mongodb.net/Onlab',
-      {
-        useNewUrlParser: true,
-        useUnifiedTopology: true,
-      },
-    );
+    const client = new MongoClient(process.env.DATABASE_URL, {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+    });
 
     async function addMeasurementToDevice(
       deviceId: string,
@@ -32,16 +30,35 @@ export class DataService {
           .collection('Plug')
           .findOne({ deviceId: deviceId });
 
-        console.log(device);
+        const currentTimezone =
+          Intl.DateTimeFormat().resolvedOptions().timeZone;
+        const hungaryTimezone = 'Europe/Budapest';
+        const hungaryOffset = 2;
 
         if (device) {
           // Extract data from deviceData
-          const year = date.getFullYear();
-          const month = date.getMonth() + 1; // Note: getMonth() returns month index starting from 0
-          const day = date.getDate();
-          const hour = date.getHours();
-          const minute = date.getMinutes();
-          const second = date.getSeconds();
+          let year = null;
+          let month = null;
+          let day = null;
+          let hour = null;
+          let minute = null;
+          let second = null;
+
+          if (currentTimezone === hungaryTimezone) {
+            year = date.getFullYear();
+            month = date.getMonth() + 1; // Note: getMonth() returns month index starting from 0
+            day = date.getDate();
+            hour = date.getHours();
+            minute = date.getMinutes();
+            second = date.getSeconds();
+          } else {
+            year = date.getUTCFullYear();
+            month = date.getUTCMonth() + 1; // Note: getMonth() returns month index starting from 0
+            day = date.getUTCDay();
+            hour = date.getUTCHours() + hungaryOffset;
+            minute = date.getUTCMinutes();
+            second = date.getUTCSeconds();
+          }
 
           // Check if the year exists
           const yearExists = device.years.some((y) => y.year === year);
