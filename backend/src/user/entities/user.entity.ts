@@ -11,7 +11,6 @@ export class User {
   id: string;
 
   @IsString()
-  @IsNotEmpty()
   name: string;
 
   @IsString()
