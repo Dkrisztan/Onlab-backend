@@ -297,9 +297,37 @@ export class DataService {
         });
       }
       console.log(dataToBeSent);
-      return dataToBeSent;
+      return this.mapConsecutiveData(dataToBeSent);
     } catch (error) {
       console.error('Error occurred:', error);
     }
+  }
+
+  mapConsecutiveData(sensorData) {
+    const mappedData = [];
+    let consecutiveData = [];
+
+    for (let i = 0; i < sensorData.length; i++) {
+      if (sensorData[i].value > 0) {
+        consecutiveData.push(sensorData[i]);
+      } else {
+        if (consecutiveData.length > 0) {
+          mappedData.push({
+            startTime: consecutiveData[0].timestamp,
+            endTime: consecutiveData[consecutiveData.length - 1].timestamp,
+          });
+          consecutiveData = [];
+        }
+      }
+    }
+
+    if (consecutiveData.length > 0) {
+      mappedData.push({
+        startTime: consecutiveData[0].timestamp,
+        endTime: consecutiveData[consecutiveData.length - 1].timestamp,
+      });
+    }
+
+    return mappedData;
   }
 }
