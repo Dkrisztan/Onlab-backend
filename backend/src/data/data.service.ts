@@ -5,15 +5,15 @@ import * as process from 'process';
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const MongoClient = require('mongodb').MongoClient;
 
+const client = new MongoClient(process.env.DATABASE_URL, {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+});
+
 @Injectable()
 export class DataService {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   async create(sendDataDto: SendDataDto) {
-    const client = new MongoClient(process.env.DATABASE_URL, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-    });
-
     async function addMeasurementToDevice(
       deviceId: string,
       timestamp: number,
@@ -227,5 +227,79 @@ export class DataService {
       sendDataDto.timestamp,
       sendDataDto.current,
     );
+  }
+
+  async getData(id: string) {
+    try {
+      await client.connect();
+
+      const db = client.db('Onlab');
+
+      const data = db.collection('Plug').aggregate([
+        // Match documents for a specific plug
+        {
+          $match: {
+            deviceId: id, // Replace this with the desired deviceId
+          },
+        },
+        // Unwind years array
+        { $unwind: '$years' },
+        // Unwind months array
+        { $unwind: '$years.months' },
+        // Unwind days array
+        { $unwind: '$years.months.days' },
+        // Unwind hours array
+        { $unwind: '$years.months.days.hours' },
+        // Unwind minutes array
+        { $unwind: '$years.months.days.hours.minutes' },
+        // Project fields
+        {
+          $project: {
+            _id: 0,
+            year: '$years.year',
+            month: '$years.months.month',
+            day: '$years.months.days.day',
+            hour: '$years.months.days.hours.hour',
+            minute: '$years.months.days.hours.minutes.minute',
+            measures: '$years.months.days.hours.minutes.measures',
+          },
+        },
+      ]);
+
+      let document: {
+        year: any;
+        month: any;
+        day: any;
+        hour: any;
+        minute: any;
+        measures: any;
+      };
+      const dataToBeSent = [];
+      while ((document = await data.next())) {
+        const { year, month, day, hour, minute, measures } = document;
+        measures.forEach((measure, index) => {
+          const timestamp = Math.floor(
+            new Date(
+              year,
+              month - 1,
+              day,
+              hour,
+              minute,
+              measures[index].second,
+            ).getTime() / 1000,
+          );
+          const value = measures[index].current;
+
+          dataToBeSent.push({
+            timestamp: timestamp,
+            value: value,
+          });
+        });
+      }
+      console.log(dataToBeSent);
+      return dataToBeSent;
+    } catch (error) {
+      console.error('Error occurred:', error);
+    }
   }
 }

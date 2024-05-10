@@ -1,4 +1,4 @@
-import { Body, Controller, Post } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post } from '@nestjs/common';
 import { DataService } from './data.service';
 import { SendDataDto } from './dto/sendDataDto';
 
@@ -9,5 +9,10 @@ export class DataController {
   @Post()
   create(@Body() sendDataDto: SendDataDto) {
     return this.dataService.create(sendDataDto);
+  }
+
+  @Get(':id')
+  getData(@Param('id') id: string) {
+    return this.dataService.getData(id);
   }
 }
