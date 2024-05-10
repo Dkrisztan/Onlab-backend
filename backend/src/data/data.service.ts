@@ -286,7 +286,7 @@ export class DataService {
               hour,
               minute,
               measures[index].second,
-            ).getTime() / 1000,
+            ).getTime(),
           );
           const value = measures[index].current;
 
