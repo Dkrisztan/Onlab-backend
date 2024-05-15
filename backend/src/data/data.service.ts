@@ -30,10 +30,21 @@ export class DataService {
           .collection('Plug')
           .findOne({ deviceId: deviceId });
 
-        const currentTimezone =
-          Intl.DateTimeFormat().resolvedOptions().timeZone;
-        const hungaryTimezone = 'Europe/Budapest';
-        const hungaryOffset = 2;
+        // Format the parsed date according to the server's timezone
+        const formattedDate = new Intl.DateTimeFormat('en-US', {
+          timeZone: 'Europe/Budapest',
+          year: 'numeric',
+          month: '2-digit',
+          day: '2-digit',
+          hour: '2-digit',
+          minute: '2-digit',
+          second: '2-digit',
+          hour12: false, // Use 24-hour format
+        }).format(date);
+
+        console.log(formattedDate);
+
+        const parsedDate = new Date(formattedDate);
 
         if (device) {
           // Extract data from deviceData
@@ -44,21 +55,12 @@ export class DataService {
           let minute = null;
           let second = null;
 
-          if (currentTimezone === hungaryTimezone) {
-            year = date.getFullYear();
-            month = date.getMonth() + 1; // Note: getMonth() returns month index starting from 0
-            day = date.getDate();
-            hour = date.getHours();
-            minute = date.getMinutes();
-            second = date.getSeconds();
-          } else {
-            year = date.getUTCFullYear();
-            month = date.getUTCMonth() + 1; // Note: getMonth() returns month index starting from 0
-            day = date.getUTCDay();
-            hour = date.getUTCHours() + hungaryOffset;
-            minute = date.getUTCMinutes();
-            second = date.getUTCSeconds();
-          }
+          year = parsedDate.getFullYear();
+          month = parsedDate.getMonth() + 1; // Note: getMonth() returns month index starting from 0
+          day = parsedDate.getDate();
+          hour = parsedDate.getHours() - 2;
+          minute = parsedDate.getMinutes();
+          second = parsedDate.getSeconds();
 
           // Check if the year exists
           const yearExists = device.years.some((y) => y.year === year);
