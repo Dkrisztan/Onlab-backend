@@ -23,6 +23,6 @@ export class PlugService {
   }
 
   async remove(id: string) {
-    return this.prisma.plug.delete({ where: { id } });
+    return this.prisma.plug.deleteMany({ where: { deviceId: id } });
   }
 }
