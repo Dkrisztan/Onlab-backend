@@ -19,7 +19,10 @@ export class PlugService {
   }
 
   async update(id: string, updatePlugDto: Prisma.PlugUpdateInput) {
-    return this.prisma.plug.update({ where: { id }, data: updatePlugDto });
+    return this.prisma.plug.updateMany({
+      where: { deviceId: id },
+      data: updatePlugDto,
+    });
   }
 
   async remove(id: string) {
