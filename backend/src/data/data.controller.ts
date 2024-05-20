@@ -7,7 +7,7 @@ export class DataController {
   constructor(private readonly dataService: DataService) {}
 
   @Post()
-  create(@Body() sendDataDto: SendDataDto) {
+  create(@Body() sendDataDto: SendDataDto[]) {
     return this.dataService.create(sendDataDto);
   }
 

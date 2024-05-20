@@ -13,7 +13,7 @@ const client = new MongoClient(process.env.DATABASE_URL, {
 @Injectable()
 export class DataService {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  async create(sendDataDto: SendDataDto) {
+  async create(sendDataDto: SendDataDto[]) {
     async function addMeasurementToDevice(
       deviceId: string,
       timestamp: number,
@@ -224,11 +224,13 @@ export class DataService {
       }
     }
 
-    await addMeasurementToDevice(
-      sendDataDto.deviceId,
-      sendDataDto.timestamp,
-      sendDataDto.current,
-    );
+    for (const value of sendDataDto) {
+      await addMeasurementToDevice(
+        value.deviceId,
+        value.timestamp,
+        value.current,
+      );
+    }
   }
 
   async getData(id: string) {
