@@ -34,6 +34,7 @@ export class AuthService {
 
     // generation of the JWT token
     return {
+      userId: user.id,
       accessToken: this.jwtService.sign({ userId: user.id }),
     };
   }
